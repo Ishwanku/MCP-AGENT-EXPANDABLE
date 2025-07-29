@@ -8,14 +8,15 @@ from .models import (
     DocumentState,
     FetchDocumentsResponse,
 )
-from .utils import (
-    get_blob_structure,
-    safe_base64_decode,
-)
-from mcp.core.config import settings
+from ..utils.azure_utils import get_blob_structure
+from ..utils.workflow_utils import safe_base64_decodedcode
+from mcp.core.config_loader import Settings
+from mcp.core.config_validator import SettingsValidator
 from azure.search.documents import SearchClient
 from azure.identity import DefaultAzureCredential
 
+settings = Settings()
+SettingsValidator(settings).validate() 
 router = APIRouter()
 
 
@@ -51,7 +52,7 @@ async def fetch_documents_tool():
         content = result.get("content", "")
         file_name = result.get("metadata_storage_name", "unknown.docx")
         blob_path_encoded = result.get("metadata_storage_path", "")
-        blob_path = safe_base64_decode(blob_path_encoded)
+        blob_path = safe_base64_decodedcode(blob_path_encoded)
 
         # Find which folder this file belongs to
         folder_name = next(

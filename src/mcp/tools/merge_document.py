@@ -3,16 +3,17 @@ Tool endpoint for merging summarized documents into a Word document.
 
 This FastAPI route takes summarized documents, organizes them by folder, and generates a formatted Word (.docx) file as the final output.
 """
+
 from docx import Document
 from fastapi import APIRouter
 from .models import (
     MergeDocumentRequest,
     MergeDocumentResponse,
 )
-from .utils import (
+from ..utils.io_utils import get_or_create_output_dir
+from ..utils.document_formatting import (
     DocumentParser,
     StyleManager,
-    get_or_create_output_dir,
 )
 from datetime import datetime
 from collections import defaultdict

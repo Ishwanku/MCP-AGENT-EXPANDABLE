@@ -6,9 +6,14 @@ from fastapi import FastAPI, Request
 from mcp.tools.a_tool_register import app as tools_app
 from mcp.core.llm_planner import LLMPlanner
 from mcp.mcp_client import MCPClient
-from mcp.core.config import settings
-from mcp.agents.utils import replace_use_previous
+from mcp.core.config_loader import Settings
+from mcp.core.config_validator import SettingsValidator
+from mcp.utils.agentUtils import replace_use_previous
 import json
+
+# Initialize config
+settings = Settings()
+SettingsValidator(settings).validate()
 
 # Create the FastAPI application for the Document Merge MCP Agent
 agent = FastAPI(title="Document Merge MCP Agent")

@@ -13,7 +13,11 @@ from tenacity import (
     retry_if_exception_type,
 )
 from openai import AsyncAzureOpenAI
-from .config import Settings
+from .config_loader import Settings
+from .config_validator import SettingsValidator
+
+settings = Settings()
+SettingsValidator(settings).validate()
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -43,26 +47,26 @@ def retry_llm_call(
 
 
 class LLMClient:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings): 
         # Store settings and deployment name
         self.settings = settings
         self.deployment_name = settings.AZURE_OPENAI_DEPLOYMENT_NAME
-        self._init_client(settings)
+        self._init_client()
 
-    def _init_client(self, settings: Settings):
+    def _init_client(self):
         # Validate required Azure OpenAI settings
-        if not settings.AZURE_OPENAI_API_KEY:
+        if not self.settings.AZURE_OPENAI_API_KEY:
             raise ValueError("AZURE_OPENAI_API_KEY is required")
-        if not settings.AZURE_OPENAI_ENDPOINT:
+        if not self.settings.AZURE_OPENAI_ENDPOINT:
             raise ValueError("AZURE_OPENAI_ENDPOINT is required")
-        if not settings.AZURE_OPENAI_DEPLOYMENT_NAME:
+        if not self.settings.AZURE_OPENAI_DEPLOYMENT_NAME:
             raise ValueError("AZURE_OPENAI_DEPLOYMENT_NAME is required")
 
         # Initialize the async OpenAI client
         self.client = AsyncAzureOpenAI(
-            api_key=settings.AZURE_OPENAI_API_KEY,
-            api_version=settings.AZURE_OPENAI_API_VERSION,
-            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            api_key=self.settings.AZURE_OPENAI_API_KEY,
+            api_version=self.settings.AZURE_OPENAI_API_VERSION,
+            azure_endpoint=self.settings.AZURE_OPENAI_ENDPOINT,
         )
 
     def is_available(self) -> bool:

@@ -6,7 +6,7 @@ This module defines the LLMPlanner class, which analyzes user commands and gener
 import json
 import difflib
 from openai import AsyncAzureOpenAI
-from .config import Settings
+from .config_loader import Settings
 
 # Tool registry with descriptions & input schema
 TOOL_REGISTRY = {

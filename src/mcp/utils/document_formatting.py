@@ -1,64 +1,16 @@
-"""
-Utility functions for document processing tools.
-
-This module provides helpers for Azure Blob structure, document parsing and formatting, LLM summarization, parallel processing, and output directory management used by the document processing workflow.
-"""
 import re
-import base64
 import logging
 import markdown2
-from pathlib import Path
 from docx import Document
-from datetime import datetime
-from typing import Dict, List
-from langgraph.pregel import Send
 from html.parser import HTMLParser
 from docx.shared import Pt, Inches
-from collections import defaultdict
-from mcp.core.config import settings
-from mcp.core.llm_client import LLMClient
 from docx.enum.style import WD_STYLE_TYPE
 from docx.styles.style import _ParagraphStyle
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContainerClient
-from .models import DocumentState, SummarizeNodeResult, FolderUpdate, BatchState
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# This function helps to get folder and file structure from Azure Blob Storage to organize the generated summaries in folder(Section) wise structure
-def get_blob_structure(storage_account, container_name):
-    account_url = f"https://{storage_account}.blob.core.windows.net"
-    blob_service_client = BlobServiceClient(
-        account_url=account_url, credential=DefaultAzureCredential()
-    )
-    container_client: ContainerClient = blob_service_client.get_container_client(
-        container_name
-    )
-    folder_map: Dict[str, List[str]] = {}
-    blobs = container_client.list_blobs()
-    for blob in blobs:
-        blob_path = blob.name
-        parts = blob_path.split("/")
-        if len(parts) == 1:
-            folder = "root"
-            file_name = parts[0]
-        else:
-            folder = "/".join(parts[:-1])
-            file_name = parts[-1]
-        folder_map.setdefault(folder, []).append(file_name)
-    return folder_map
-
-
-# Define a safe base64 decode function to handle potential padding issues
-def safe_base64_decode(s):
-    missing_padding = len(s) % 4
-    if missing_padding:
-        s += "=" * (4 - missing_padding)
-    return base64.b64decode(s).decode("utf-8")
 
 
 # for removing the markdown and json from llm generated content
@@ -240,101 +192,11 @@ class StyleManager:
         return doc.styles.get(style_name, doc.styles["Normal"])
 
 
-# This function is used to fan out documents for processing in parallel
-async def fan_out_documents(state: BatchState):
-    logger.info(f"Fan-out: Processing {len(state.documents)} documents")
-    return [Send("summarize_node", {"documents": [doc]}) for doc in state.documents]
+import logging
 
-
-# This function summarizes each document using the LLM client
-async def summarize_node(state: dict, max_tokens: int, temperature: float):
-    logger.info(f"Summarize node called with state: {state}")
-    doc = state["documents"][0]
-    if isinstance(doc, dict):
-        doc = DocumentState(**doc)
-    logger.info(f"Summarizing document: {doc.file_name}")
-    llm_client = LLMClient(settings)
-    prompt = f"""
-    Document: {doc.content}
-    Please analyze the document and provide a concise summary.
-    """
-    try:
-        analysis = await llm_client.generate_content(
-            prompt=prompt, max_tokens=max_tokens, temperature=temperature
-        )
-        logger.info(f"LLM response for {doc.file_name}: {analysis}")
-        if not analysis or analysis == "No response generated":
-            analysis = "Summary generation failed."
-            logger.warning(f"Summary generation failed for {doc.file_name}")
-    except Exception as e:
-        analysis = f"Summary generation failed: {str(e)}"
-        logger.error(f"Error summarizing {doc.file_name}: {str(e)}")
-
-    result = SummarizeNodeResult(
-        folder_update=FolderUpdate(
-            folder=doc.folder_name,
-            documents=[
-                {
-                    "blob_path": doc.blob_path,
-                    "document_name": doc.file_name,
-                    "status": (
-                        "summarized"
-                        if analysis != "Summary generation failed."
-                        else "failed"
-                    ),
-                    "analysis": analysis,
-                }
-            ],
-        ),
-        summary_text=f"Summary for {doc.file_name}:\n{analysis}",
-    )
-    logger.info(f"Summarize node result for {doc.file_name}: {result}")
-    return {"summarize_node": result}
-
-
-# This function aggregates results from the summarize_node and prepares the final output
-def aggregate_results(state: BatchState):
-    logger.info(f"Aggregating results from state: {state}")
-
-    folder_updates_dict = defaultdict(list)
-    summaries = []
-
-    # Collect results from summarize_node
-    for result in state.summarize_node:
-        if hasattr(result, "folder_update"):
-            folder = result.folder_update.folder
-            folder_updates_dict[folder].extend(result.folder_update.documents)
-            logger.info(f"Added documents to folder {folder}")
-        if hasattr(result, "summary_text"):
-            summaries.append(result.summary_text)
-            logger.info(f"Added summary: {result.summary_text}")
-
-    folder_updates = [
-        FolderUpdate(folder=folder, documents=docs)
-        for folder, docs in folder_updates_dict.items()
-    ]
-
-    logger.info(f"Aggregated folder updates: {len(folder_updates)} folders")
-
-    result = {
-        "folder_updates": folder_updates,
-        "summaries": summaries,
-        "documents": [],  # Clear to prevent further processing
-        "summarize_node": state.summarize_node,  # Keep for inspection if needed
-    }
-
-    logger.info(f"Aggregation result: {result}")
-    return result
-
-
-# Create output directory
-def get_or_create_output_dir(output_folder: str = None) -> Path:
-    base_name = output_folder or getattr(settings, "OUTPUT_DIR", "output_folder")
-    timestamp = datetime.now().strftime("on_%Y-%m-%d_at_%I_%M_%p")
-    full_name = f"{base_name}_{timestamp}"
-    output_dir = Path(full_name).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
-    return output_dir
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # This function converts folder updates to the input format required for merging documents
