@@ -10,8 +10,8 @@ from .models import (
     MergeDocumentRequest,
     MergeDocumentResponse,
 )
-from ..utils.io_utils import get_or_create_output_dir
-from ..utils.document_formatting import (
+from utils.io_utils import get_or_create_output_dir
+from utils.document_formatting import (
     DocumentParser,
     StyleManager,
 )

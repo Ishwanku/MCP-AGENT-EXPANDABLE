@@ -10,11 +10,11 @@ from .models import (
     BatchSummarizeResponse,
     BatchState,
 )
-from ..utils.workflow_utils import (
+from utils.workflow_utils import (
     fan_out_documents,
     aggregate_results,
 )
-from ..utils.azure_utils import summarize_node
+from utils.azure_utils import summarize_node
 from langgraph.graph import StateGraph, START, END
 import logging
 

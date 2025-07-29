@@ -3,12 +3,12 @@ This file defines the main API endpoints, including /plan_and_execute, which rec
 generates a workflow plan using an LLM, and executes a sequence of document processing tools (fetch, summarize, merge) to fulfill the request.
 """
 from fastapi import FastAPI, Request
-from mcp.tools.a_tool_register import app as tools_app
-from mcp.core.llm_planner import LLMPlanner
-from mcp.mcp_client import MCPClient
-from mcp.core.config_loader import Settings
-from mcp.core.config_validator import SettingsValidator
-from mcp.utils.agentUtils import replace_use_previous
+from tools.a_tool_register import app as tools_app
+from core.llm_planner import LLMPlanner
+from mcp_client import MCPClient
+from core.config_loader import Settings
+from core.config_validator import SettingsValidator
+from utils.agentUtils import replace_use_previous
 import json
 
 # Initialize config

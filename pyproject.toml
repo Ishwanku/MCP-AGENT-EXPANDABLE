@@ -29,7 +29,4 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["mcp", "mcp.agents", "mcp.core", "mcp.tools"]
-
-[project.scripts]
-mcp-agent = "mcp.agents.agent:agent"
+packages = ["agents", "cli", "core", "services", "tools", "utils"]

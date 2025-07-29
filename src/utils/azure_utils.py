@@ -1,11 +1,11 @@
 import logging
 from typing import Dict, List
-from mcp.core.config_loader import Settings
-from mcp.core.config_validator import SettingsValidator
-from mcp.core.llm_client import LLMClient
+from core.config_loader import Settings
+from core.config_validator import SettingsValidator
+from core.llm_client import LLMClient
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, ContainerClient
-from ..tools.models import DocumentState, SummarizeNodeResult, FolderUpdate
+from tools.models import DocumentState, SummarizeNodeResult, FolderUpdate
 
 settings = Settings()
 SettingsValidator(settings).validate()

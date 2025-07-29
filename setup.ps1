@@ -24,4 +24,4 @@ Write-Host "Installing dependencies from pyproject.toml..."
 
 # 6. Start the FastAPI server
 Write-Host "Starting FastAPI server with reload..."
-& $venvPython -m uvicorn src.mcp.agents.agent:agent --host 0.0.0.0 --port 9100 --reload
+& $venvPython -m uvicorn src.agents.agent:agent --host 0.0.0.0 --port 9100 --reload

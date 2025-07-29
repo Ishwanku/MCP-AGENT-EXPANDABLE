@@ -8,10 +8,10 @@ from .models import (
     DocumentState,
     FetchDocumentsResponse,
 )
-from ..utils.azure_utils import get_blob_structure
-from ..utils.workflow_utils import safe_base64_decodedcode
-from mcp.core.config_loader import Settings
-from mcp.core.config_validator import SettingsValidator
+from utils.azure_utils import get_blob_structure
+from utils.workflow_utils import safe_base64_decodedcode
+from core.config_loader import Settings
+from core.config_validator import SettingsValidator
 from azure.search.documents import SearchClient
 from azure.identity import DefaultAzureCredential
 

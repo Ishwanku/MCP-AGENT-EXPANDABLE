@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
-from mcp.core.config_loader import Settings
-from mcp.core.config_validator import SettingsValidator
+from core.config_loader import Settings
+from core.config_validator import SettingsValidator
 
 settings = Settings()
 SettingsValidator(settings).validate()

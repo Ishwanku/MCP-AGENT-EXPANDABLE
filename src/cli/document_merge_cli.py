@@ -1,4 +1,4 @@
-from mcp.services.plan_and_execute_client import PlanAndExecuteClient
+from services.plan_and_execute_client import PlanAndExecuteClient
 
 def main():
     client = PlanAndExecuteClient()

@@ -1,6 +1,4 @@
-# src/mcp/core/config_validator.py
-
-from src.mcp.core.config_loader import Settings
+from core.config_loader import Settings
 
 
 class SettingsValidator:
